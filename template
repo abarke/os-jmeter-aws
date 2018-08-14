@@ -59,4 +59,4 @@ DOCKER_ELK=sebp/elk:es240_l240_k460
 # mandatory
 # The Docker image to use for launching an ELK stack
 # Should only require changing when the Docker image is updated
-DOCKER_JMETER=ordnancesurvey/jmeter:v1.0
+DOCKER_JMETER=ordnancesurvey/jmeter:v2.0
