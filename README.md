@@ -76,7 +76,7 @@ In the test directory is a __config__ file that will require completing. This fi
 
 At a minimum the name of the JMX file should be added to the __config__ file at the appropriate point.
 
-> If working with an https endpoint, you will need ensure your certificate file is in your data directory and the P12_FILE and P12_PASSWORD environment variables are completed within this config file.
+> If working with an https endpoint and 2 way SSL authentication, you will need ensure your certificate file is in your data directory and the P12_FILE and P12_PASSWORD environment variables are completed within this config file.
 
 ## Step 3 - Verify the environment
 To verify that the configuration looks okay it should be validated, this can be done at any time as it does not alter anything:
