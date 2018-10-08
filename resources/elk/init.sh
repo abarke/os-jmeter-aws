@@ -30,7 +30,7 @@ check $? "Move logstash config file into conf directory"
 log "Waiting for Docker daemon to start"
 typeset -i MC=0
 while true; do
-    DC=$(docker ps)
+    DC=$(sudo docker ps)
     if (( $? == 0 )); then
         break
     fi
@@ -44,11 +44,11 @@ while true; do
 done
 
 log "Pulling docker image: DOCKER_ELK_IMAGE"
-docker pull DOCKER_ELK_IMAGE
+sudo docker pull DOCKER_ELK_IMAGE
 check $? "Pulling docker image: DOCKER_ELK_IMAGE"
 
 log "Running docker image: DOCKER_ELK_IMAGE"
-docker run -d --restart=always -v ${LOG_DIR}:/jmeter-logs -v ${CONF_DIR}:/etc/logstash/conf.d --name elk -p 8080:5601 DOCKER_ELK_IMAGE
+sudo docker run -d --restart=always -v ${LOG_DIR}:/jmeter-logs -v ${CONF_DIR}:/etc/logstash/conf.d --name elk -p 8080:5601 DOCKER_ELK_IMAGE
 check $? "Running docker image: DOCKER_ELK_IMAGE"
 
 log "Sleeping for ${DELAY} minutes"
@@ -59,7 +59,7 @@ done
 log "Awake"
 
 log "Obtaining IP address of ELK instance from Docker daemon"
-ELK_IP=$(docker inspect --format '{{.NetworkSettings.IPAddress}}' elk)
+ELK_IP=$(sudo docker inspect --format '{{.NetworkSettings.IPAddress}}' elk)
 check $? "Obtaining IP address of ELK instance from Docker daemon"
 
 log "PUTting index template to Elasticsearch on ELK instance (${ELK_IP})"

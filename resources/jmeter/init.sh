@@ -50,7 +50,7 @@ fi
 log "Waiting for Docker daemon to start"
 typeset -i MC=0
 while true; do
-    DC=$(docker ps)
+    DC=$(sudo docker ps)
     if (( $? == 0 )); then
         break
     fi
@@ -64,5 +64,5 @@ while true; do
 done
 
 log "Pulling docker image: %DOCKER_JMETER_IMAGE%"
-docker pull %DOCKER_JMETER_IMAGE%
+sudo docker pull %DOCKER_JMETER_IMAGE%
 check $? "Pulling docker image: %DOCKER_JMETER_IMAGE%"

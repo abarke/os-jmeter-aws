@@ -66,7 +66,7 @@ if [[ -r ${TEST_DIR}/jmeter ]]; then
         declare -i TCOUNT=0
         for IP in ${JMETER_CURRENT_IPS}; do
           ICOUNT=${ICOUNT}+1
-          COUNT=$(ssh -i ${AWS_PEM} -oStrictHostKeyChecking=no ec2-user@${IP} "docker ps | wc -l")
+          COUNT=$(ssh -i ${AWS_PEM} -oStrictHostKeyChecking=no ec2-user@${IP} "sudo docker ps | wc -l")
           check $? "Unable to access JMeter instance ${IP}"
           if (( ${COUNT} > 1 )); then
             TCOUNT=${TCOUNT}+1

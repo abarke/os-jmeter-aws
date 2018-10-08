@@ -124,7 +124,7 @@ fi
 ## We really, really want --rm, so we have to settle for running docker in the
 ## background.
 
-CMD="nohup docker run --rm \
+CMD="sudo nohup docker run --rm \
 ${PWD} \
 ${JVMARGS} \
 -v /home/ec2-user/${TEST_NAME}/log-dir:/logs \
@@ -152,7 +152,7 @@ sleep ${RUN_TIME_SECONDS}
 echo ${TS} >> ${TEST_DIR}/test-runs.log
 
 # Stop the Docker containers on all machines
-CMD="nohup docker stop ${TEST_NAME} >> /home/ec2-user/${TEST_NAME}/log-dir/${TS}-docker.log 2>&1 &"
+CMD="sudo nohup docker stop ${TEST_NAME} >> /home/ec2-user/${TEST_NAME}/log-dir/${TS}-docker.log 2>&1 &"
 for IP in ${JMETER_CURRENT_IPS}; do
     ssh -i ${AWS_PEM} -oStrictHostKeyChecking=no ec2-user@${IP} "${CMD}"
     check $? "Problem terminating Docker JMeter on ${IP}"

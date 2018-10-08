@@ -101,7 +101,7 @@ fi
 ## We really, really want --rm, so we have to settle for running docker in the
 ## background.
 
-CMD="nohup docker run --rm \
+CMD="sudo nohup docker run --rm \
 ${PWD} \
 ${JVMARGS} \
 -v /home/ec2-user/${TEST_NAME}/log-dir:/logs \

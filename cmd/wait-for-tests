@@ -56,7 +56,7 @@ source ${CMD_DIR}/public-or-private
 if [[ ${JMETER_CURRENT_IPS} ]]; then
     for IP in ${JMETER_CURRENT_IPS}; do
         while true; do
-            DC=$(ssh -i ${AWS_PEM} -oStrictHostKeyChecking=no ec2-user@${IP} 'docker ps | grep -i jmeter | wc -l')
+            DC=$(ssh -i ${AWS_PEM} -oStrictHostKeyChecking=no ec2-user@${IP} 'sudo docker ps | grep -i jmeter | wc -l')
             check $? "Checking host ${IP}"
             if (( ${DC} == 0 )); then
                 break
