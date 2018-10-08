@@ -111,5 +111,5 @@ echo "${TEST_KEY}" >> ${PROCESSED_LOG}
 
 echo "Log loading is asynchronous and may take a few minutes."
 echo ""
-echo "Visit the Kebana dashboard at: http://${ELK_PUBLIC_IP}:8080/"
+echo "Visit the Kibana dashboard at: http://${ELK_PUBLIC_IP}:8080/"
 echo ""
