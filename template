@@ -7,7 +7,7 @@ TEST_NAME=
 # optional
 # Determines if the running scripts should use public or private IP addresses
 # to communicate with the ELK and JMeter instances. This would be set to private
-# when running from a machine that exists in same VPC as ELK and JMetere instances
+# when running from a machine that exists in same VPC as ELK and JMeter instances
 # for example. Would always be public from a non-AWS machine.
 USE_PRIVATE_IP=
 
@@ -33,6 +33,9 @@ P12_PASSWORD=
 # The AMI to use for ELK and JMeter slaves. Must contain Docker
 # Should only require changing when the AMI is updated.
 AWS_AMI=ami-6a470c19
+
+# Public AMI: aws-elasticbeanstalk-amzn-2018.03.0.x86_64-docker-hvm-201809220257
+# AWS_AMI=ami-0917c3fcb8cce7e59
 
 # mandatory
 # The instance types to use for ELK and JMeter slaves.
