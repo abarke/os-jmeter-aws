@@ -272,7 +272,7 @@ Typical workflow - Run STEP tests, ramping up over time
 	jm run-step-tests --delay-minutes 10
 	jm process-logs
 	## Run more tests and process logs ##
-	## Visit Kabana dashboard at http://ELK:8080/ ##
+	## Visit Kibana dashboard at http://ELK:8080/ ##
 	jm jmeter-terminate
 	jm elk-terminate
 
@@ -288,7 +288,7 @@ Typical workflow -  Background tests that self-terminate
 	km test-status --wait
 	jm process-logs
 	## Run more tests and process logs ##
-	## Visit Kabana dashboard at http://ELK:8080/ ##
+	## Visit Kibana dashboard at http://ELK:8080/ ##
 	jm jmeter-terminate
 	jm elk-terminate
 

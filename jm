@@ -129,7 +129,7 @@ function list_commands() {
     echo -e "\tjm run-step-tests --delay-minutes 10 __OR__ jm run-tests"
     echo -e "\tjm process-logs"
     echo -e "\t## Run more tests and process logs ##"
-    echo -e "\t## Visit Kabana dashboard at http://ELK:8080/ ##"
+    echo -e "\t## Visit Kibana dashboard at http://ELK:8080/ ##"
     echo -e "\tjm jmeter-terminate"
     echo -e "\tjm elk-terminate"
     echo ""
