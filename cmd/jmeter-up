@@ -98,8 +98,8 @@ source ${CMD_DIR}/public-or-private
 cp ${RES_DIR}/jmeter/* ${WORK_DIR}/jmeter
 check $? "Copy resources into JMETER work directory"
 
-cp ${DATA_DIR}/*.jmx ${WORK_DIR}/jmeter
-check $? "Copy JMX file(s) from ${DATA_DIR} into JMETER work directory"
+cp -rf ${DATA_DIR}/* ${WORK_DIR}/jmeter
+check $? "Copying all file(s) from ${DATA_DIR} into JMETER work directory"
 
 if [[ ! -z ${P12_FILE} && -r ${DATA_DIR}/${P12_FILE} ]]; then
     cp ${DATA_DIR}/${P12_FILE} ${WORK_DIR}/jmeter
