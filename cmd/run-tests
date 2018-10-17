@@ -10,6 +10,7 @@ function usage() {
      -h, --help                     displays this help message
      -n, --name [NAME]              optional name of the test
      -j, --jvm-args [ARGS]          optional JVM Args to pass to JMeter ("-Xms512m -Xmx2048m" etc.)
+     -o, --jmeter-args [ARGS]       optional JMETER Args to pass to JMeter ("-Jusers=10 -Jrampup=10 -Jduration=30" etc.)
      -f, --jmx-file [FILENAME]      optional name of JMX file to execute, file must already have been loaded on instances
 
      The name of a test will be lower cased and all whitespace replaced with underscores.
@@ -34,6 +35,10 @@ while (( $# > 0 )); do
             ;;
         -j|--jvm-args)
             JVM_ARGS=$2
+            shift
+            ;;
+        -o|--jmeter-args)
+            JMETER_ARGS=$2
             shift
             ;;
         -f|--jmx-file)
@@ -97,6 +102,11 @@ if [[ ${JVM_ARGS} ]]; then
     JVMARGS="-e 'JVM_ARGS=${JVM_ARGS}'"
 fi
 
+JMETERARGS=""
+if [[ ${JMETER_ARGS} ]]; then
+    JMETERARGS="-e 'JMETER_ARGS=${JMETER_ARGS}'"
+fi
+
 ## At this point we have a conflict, we cannot Docker run with both -d and --rm!
 ## We really, really want --rm, so we have to settle for running docker in the
 ## background.
@@ -104,6 +114,7 @@ fi
 CMD="sudo nohup docker run --rm \
 ${PWD} \
 ${JVMARGS} \
+${JMETERARGS} \
 -v /home/ec2-user/${TEST_NAME}/log-dir:/logs \
 -v /home/ec2-user/${TEST_NAME}/data-dir:/input_data \
 -v /home/ec2-user/${TEST_NAME}/conf-dir:/jmconf \

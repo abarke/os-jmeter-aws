@@ -24,6 +24,11 @@ if [ -d "/input_data/lib" ]; then
     yes | cp -rf /input_data/lib/* /var/lib/apache-jmeter/lib
 fi
 
+JARGS=""
+if [[ ${JMETER_ARGS} ]]; then
+    JARGS=${JMETER_ARGS}
+fi
+
 SYSP=""
 if [[ ! -z ${P12PWD} ]]; then
     SYSP="-Djavax.net.ssl.keyStore=/input_data/%P12_FILE% -Djavax.net.ssl.keyStorePassword=${P12PWD} -Djavax.net.ssl.keyStoreType=pkcs12"
@@ -35,4 +40,4 @@ else
     T=/input_data/${JMX_FILE}
 fi
 
-/var/lib/apache-jmeter/bin/jmeter -n -t ${T} -p /jmconf/jmeter.properties -l /logs/%TEST_NAME%_%TIMESTAMP%.log ${SYSP}
+/var/lib/apache-jmeter/bin/jmeter -n -t ${T} -p /jmconf/jmeter.properties -l /logs/%TEST_NAME%_%TIMESTAMP%.log ${SYSP} ${JARGS}
