@@ -76,7 +76,7 @@ source ${CMD_DIR}/verify
 source ${TEST_DIR}/jmeter
 source ${CMD_DIR}/public-or-private
 
-cp ${SELECTED_JMX_FILE} ${DATA_DIR}
+cp -f ${SELECTED_JMX_FILE} ${DATA_DIR}
 check $? "Copying ${SELECTED_JMX_FILE} to ${DATA_DIR}"
 
 if [[ ${JMETER_CURRENT_IPS} ]]; then

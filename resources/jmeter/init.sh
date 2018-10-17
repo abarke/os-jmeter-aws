@@ -31,10 +31,6 @@ log "Adding ELK public key to known hosts"
 cat ${SCRIPT_DIR}/elk_rsa.pub >> ~/.ssh/authorized_keys
 check $? "Adding ELK public key to known hosts"
 
-log "Move JMX files to data directory"
-mv ${SCRIPT_DIR}/*.jmx ${DATA_DIR}
-check $? "Move *.jmx into data directory"
-
 if [[ ! -z "%P12_FILE%" ]]; then
     log "Move %P12_FILE% files to data directory"
     mv ${SCRIPT_DIR}/%P12_FILE% ${DATA_DIR}

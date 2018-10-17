@@ -98,7 +98,8 @@ source ${CMD_DIR}/public-or-private
 cp ${RES_DIR}/jmeter/* ${WORK_DIR}/jmeter
 check $? "Copy resources into JMETER work directory"
 
-cp -rf ${DATA_DIR}/* ${WORK_DIR}/jmeter
+mkdir -p ${WORK_DIR}/jmeter/data-dir
+cp -rf ${DATA_DIR}/* ${WORK_DIR}/jmeter/data-dir
 check $? "Copying all file(s) from ${DATA_DIR} into JMETER work directory"
 
 if [[ ! -z ${P12_FILE} && -r ${DATA_DIR}/${P12_FILE} ]]; then
