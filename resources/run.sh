@@ -35,9 +35,13 @@ if [[ ! -z ${P12PWD} ]]; then
 fi
 
 if [[ -z ${JMX_FILE} ]]; then
-    T=/input_data/%JMX_FILE%
+    TEST_PLAN=/input_data/%JMX_FILE%
 else
-    T=/input_data/${JMX_FILE}
+    TEST_PLAN=/input_data/${JMX_FILE}
 fi
 
-/var/lib/apache-jmeter/bin/jmeter -n -t ${T} -p /jmconf/jmeter.properties -l /logs/%TEST_NAME%_%TIMESTAMP%.log ${SYSP} ${JARGS}
+PROPERTIES=/jmconf/jmeter.properties
+RESULTS=/logs/%TEST_NAME%_results_%TIMESTAMP%.log
+LOG=/logs/%TEST_NAME%_log_%TIMESTAMP%.log
+
+/var/lib/apache-jmeter/bin/jmeter -n -t ${TEST_PLAN} -p ${PROPERTIES} -l ${RESULTS} -j ${LOG} ${SYSP} ${JARGS}
