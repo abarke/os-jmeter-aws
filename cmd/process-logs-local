@@ -1,9 +1,9 @@
-# Fetch logs from JMeter instances and feed to LogStash on ELK instance
+# Fetch logs from JMeter instances, parse the log files into one and generate a JMeter report
 
 function usage() {
     cat <<-EOF
 
-    Fetch logs from JMeter instances and feed to LogStash on ELK instance
+    Fetch logs from JMeter instances, parse the log files into one and generate a JMeter report
 
     Usage: $0 process-logs [options]
      -h, --help             displays this help message
@@ -81,11 +81,14 @@ source ${TEST_DIR}/elk
 source ${TEST_DIR}/jmeter
 source ${CMD_DIR}/public-or-private
 
-PROCESSED_LOG_SCRIPT_NAME=process-logs_${TEST_KEY}.sh
-PROCESSED_LOG_SCRIPT=${WORK_DIR}/process-logs_${TEST_KEY}.sh
+PROCESSED_LOG_SCRIPT_NAME=process-logs-local_${TEST_KEY}.sh
+PROCESSED_LOG_SCRIPT=${WORK_DIR}/local/${PROCESSED_LOG_SCRIPT_NAME}
+
+# Create local folder
+mkdir -p ${WORK_DIR}/local
 
 # Create a script to run on ELK that will fetch all of the test log files
-cp ${RES_DIR}/process-logs.sh ${PROCESSED_LOG_SCRIPT}
+cp ${RES_DIR}/process-logs-local.sh ${PROCESSED_LOG_SCRIPT}
 check $? "Unable to create working copy of process logs script"
 
 chmod 755 ${PROCESSED_LOG_SCRIPT}
@@ -95,22 +98,20 @@ check $? "Unable to make working copy of process logs script executable"
 sed -i \
  -e "s|%TEST_NAME%|${TEST_NAME}|" \
  -e "s|%TEST_KEY%|${TEST_KEY}|" \
- -e "s|%JMETER_INSTANCES%|${JMETER_PRIVATE_IPS}|" \
+ -e "s|%TEST_DIR%|${TEST_DIR}|" \
+ -e "s|%AWS_PEM%|${AWS_PEM}|" \
+ -e "s|%JMETER_INSTANCES%|${JMETER_CURRENT_IPS}|" \
  ${PROCESSED_LOG_SCRIPT}
 check $? "Unable to replace placeholders in working copy of process logs script"
 
-# Copy the file to ELK and execute it (as a background task?)
-CHMOD_CMD="chmod 400 /home/ec2-user/${TEST_NAME}/elk_rsa"
-RUN_PROCESS_CMD="nohup /home/ec2-user/${TEST_NAME}/work-dir/${PROCESSED_LOG_SCRIPT_NAME} > /home/ec2-user/${TEST_NAME}/log-dir/process-logs_${TEST_KEY}.log 2>&1 &"
-scp -q -i ${AWS_PEM} -oStrictHostKeyChecking=no ${RES_DIR}/fix-jmeter-errors.awk ${PROCESSED_LOG_SCRIPT} ec2-user@${ELK_CURRENT_IP}:/home/ec2-user/${TEST_NAME}/work-dir
-check $? "Problem copying process logs script to ELK instance ${ELK_CURRENT_IP}"
-ssh -i ${AWS_PEM} -oStrictHostKeyChecking=no ec2-user@${ELK_CURRENT_IP} "${CHMOD_CMD}; ${RUN_PROCESS_CMD}"
-check $? "Problem launching process logs script on ELK instance ${ELK_CURRENT_IP}"
+# execute it as a background task
+nohup ${TEST_DIR}/work/local/${PROCESSED_LOG_SCRIPT_NAME} > ${TEST_DIR}/logs/process-logs-local_${TEST_KEY}.log 2>&1 &
+check $? "Unable to execute background task"
 
 # Mark this test key as processed
 echo "${TEST_KEY}" >> ${PROCESSED_LOG}
 echo ""
 echo "Log loading is asynchronous and may take a few minutes."
 echo ""
-echo "Visit the Kibana dashboard at: http://${ELK_PUBLIC_IP}:8080/"
+echo "Once finished the logs will be located at ${TEST_DIR}/logs/${TEST_KEY}"
 echo ""

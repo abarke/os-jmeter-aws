@@ -1,14 +1,15 @@
-# Fetch logs from JMeter instances and feed to LogStash on ELK instance
+# Fetch logs from JMeter instances and generate a JMeter report
 
 function usage() {
     cat <<-EOF
 
-    Fetch logs from JMeter instances and feed to LogStash on ELK instance
+    Fetch logs from JMeter instances and generate a JMeter report
 
     Usage: $0 process-logs [options]
      -h, --help             displays this help message
      -n, --name [NAME]      optional name of the test
      -k, --test-key [KEY]   optional key that identifies a test run, defaults to last test run
+     -j, --jvm-args [ARGS]  optional JVM Args to pass to JMeter ("-Xms512m -Xmx2048m" etc.)
 
      The name of a test will be lower cased and all whitespace replaced with underscores.
 
@@ -17,6 +18,7 @@ function usage() {
 EOF
 }
 
+JVM_ARGS=
 typeset -i COUNT=1
 while (( $# > 0 )); do
     key="$1"
@@ -31,6 +33,10 @@ while (( $# > 0 )); do
             ;;
         -k|--test-key)
             TEST_KEY=$2
+            shift
+            ;;
+        -j|--jvm-args)
+            JVM_ARGS=$2
             shift
             ;;
         *)
@@ -54,7 +60,7 @@ if [[ ! -d ${TEST_DIR} ]]; then
 fi
 
 TEST_RUN_LOGS=${TEST_DIR}/test-runs.log
-PROCESSED_LOG=${TEST_DIR}/processed-runs.log
+PROCESSED_REPORT=${TEST_DIR}/processed-reports.log
 
 if [[ -z ${TEST_KEY} ]]; then
     if [[ ! -r ${TEST_RUN_LOGS} ]]; then
@@ -68,8 +74,8 @@ if [[ -z ${TEST_KEY} ]]; then
     fi
 fi
 
-if [[ -r ${PROCESSED_LOG} ]]; then
-    T=$(grep -q "^${TEST_KEY}$" ${PROCESSED_LOG})
+if [[ -r ${PROCESSED_REPORT} ]]; then
+    T=$(grep -q "^${TEST_KEY}$" ${PROCESSED_REPORT})
     if (( $? == 0 )); then
         error "Test run '${TEST_KEY}' has already been processed"
     fi
@@ -81,36 +87,44 @@ source ${TEST_DIR}/elk
 source ${TEST_DIR}/jmeter
 source ${CMD_DIR}/public-or-private
 
-PROCESSED_LOG_SCRIPT_NAME=process-logs_${TEST_KEY}.sh
-PROCESSED_LOG_SCRIPT=${WORK_DIR}/process-logs_${TEST_KEY}.sh
+REPORT_SCRIPT_NAME=generate-report_${TEST_KEY}.sh
+REPORT_SCRIPT=${WORK_DIR}/local/${REPORT_SCRIPT_NAME}
 
-# Create a script to run on ELK that will fetch all of the test log files
-cp ${RES_DIR}/process-logs.sh ${PROCESSED_LOG_SCRIPT}
+# Create local folder
+mkdir -p ${WORK_DIR}/local
+
+# Create a script that will run in the docker container
+cp ${RES_DIR}/generate-report.sh ${REPORT_SCRIPT}
 check $? "Unable to create working copy of process logs script"
 
-chmod 755 ${PROCESSED_LOG_SCRIPT}
+# Make script executable
+chmod 755 ${REPORT_SCRIPT}
 check $? "Unable to make working copy of process logs script executable"
 
 # Substitute values for place holders in process logs script
 sed -i \
- -e "s|%TEST_NAME%|${TEST_NAME}|" \
  -e "s|%TEST_KEY%|${TEST_KEY}|" \
- -e "s|%JMETER_INSTANCES%|${JMETER_PRIVATE_IPS}|" \
- ${PROCESSED_LOG_SCRIPT}
+ -e "s|%TEST_DIR%|${TEST_DIR}|" \
+ ${REPORT_SCRIPT}
 check $? "Unable to replace placeholders in working copy of process logs script"
 
-# Copy the file to ELK and execute it (as a background task?)
-CHMOD_CMD="chmod 400 /home/ec2-user/${TEST_NAME}/elk_rsa"
-RUN_PROCESS_CMD="nohup /home/ec2-user/${TEST_NAME}/work-dir/${PROCESSED_LOG_SCRIPT_NAME} > /home/ec2-user/${TEST_NAME}/log-dir/process-logs_${TEST_KEY}.log 2>&1 &"
-scp -q -i ${AWS_PEM} -oStrictHostKeyChecking=no ${RES_DIR}/fix-jmeter-errors.awk ${PROCESSED_LOG_SCRIPT} ec2-user@${ELK_CURRENT_IP}:/home/ec2-user/${TEST_NAME}/work-dir
-check $? "Problem copying process logs script to ELK instance ${ELK_CURRENT_IP}"
-ssh -i ${AWS_PEM} -oStrictHostKeyChecking=no ec2-user@${ELK_CURRENT_IP} "${CHMOD_CMD}; ${RUN_PROCESS_CMD}"
-check $? "Problem launching process logs script on ELK instance ${ELK_CURRENT_IP}"
+JVMARGS=""
+if [[ ${JVM_ARGS} ]]; then
+    JVMARGS="-e 'JVM_ARGS=${JVM_ARGS}'"
+fi
+
+# Execute it as a background task
+sudo nohup docker run --rm \
+${JVMARGS} \
+-v /home/ec2-user/${TEST_NAME}/logs:/logs \
+-v /home/ec2-user/${TEST_NAME}/work:/work \
+--entrypoint "/work/local/${REPORT_SCRIPT_NAME}" \
+ordnancesurvey/jmeter:v2.0 > /home/ec2-user/${TEST_NAME}/logs/generate-report-docker_${TEST_KEY}.log 2>&1 &\
 
 # Mark this test key as processed
-echo "${TEST_KEY}" >> ${PROCESSED_LOG}
+echo "${TEST_KEY}" >> ${PROCESSED_REPORT}
 echo ""
-echo "Log loading is asynchronous and may take a few minutes."
+echo "Report generation is asynchronous and may take a few minutes."
 echo ""
-echo "Visit the Kibana dashboard at: http://${ELK_PUBLIC_IP}:8080/"
+echo "Once finished a report will be generated."
 echo ""
